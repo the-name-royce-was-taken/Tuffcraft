@@ -884,11 +884,31 @@ function startGamepad(){
 
   setupMouseDetection();
 
-  createUI();
+  // Wait for Eaglercraft's loading UI to finish refreshing
+  setTimeout(()=>{
+
+    createUI();
+
+  },3000);
 
   requestAnimationFrame(loop);
 
 }
+
+//%%%%%%%%%%% LOAD %%%%%%%%%%%
+
+if(document.readyState === "loading"){
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    startGamepad
+  );
+
+}else{
+
+  startGamepad();
+
+}  
 
 //%%%%%%%%%%% WAIT FOR PAGE %%%%%%%%%%%
 
