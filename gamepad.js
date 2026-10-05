@@ -36,38 +36,57 @@ let mouseButtons = {
 let lastRealMouseActivity = 0;
 let syntheticMouseEvent = false;
 
-// How long real mouse movement has priority over the right stick
 const MOUSE_PRIORITY_TIME = 250;
 
 function realMouseActivity(){
+
   if(syntheticMouseEvent) return;
+
   lastRealMouseActivity = performance.now();
+
 }
 
 function mouseIsActive(){
+
   return performance.now() - lastRealMouseActivity < MOUSE_PRIORITY_TIME;
+
 }
 
 function realMouseButtonDown(button){
+
   return mouseButtons[button] === true;
+
 }
 
 //%%%%%%%% LOAD / SAVE %%%%%%%%
 
 function saveMapping(){
-  localStorage.setItem(SAVE_KEY, JSON.stringify(mapping));
+
+  localStorage.setItem(
+    SAVE_KEY,
+    JSON.stringify(mapping)
+  );
+
 }
 
 function loadMapping(){
+
   try{
-    const m = JSON.parse(localStorage.getItem(SAVE_KEY));
+
+    const m = JSON.parse(
+      localStorage.getItem(SAVE_KEY)
+    );
+
     if(m) mapping = m;
+
   }catch(e){}
+
 }
 
 //%%%%%%%% DRAW CANVAS %%%%%%%%%
 
 function getCanvas(){
+
   const list = document.querySelectorAll("canvas");
 
   for(const c of list){
@@ -79,15 +98,19 @@ function getCanvas(){
     if(r.width < 400 || r.height < 300) continue;
 
     return c;
+
   }
 
   return null;
+
 }
 
 //%%%%%% GAMEPAD DETECTION %%%%%%
 
 function getPad(){
-  const pads = navigator.getGamepads?.() || [];
+
+  const pads =
+    navigator.getGamepads?.() || [];
 
   for(const p of pads){
 
@@ -96,51 +119,58 @@ function getPad(){
   }
 
   return null;
+
 }
 
 //%%%%%%%% REAL MOUSE DETECTION %%%%%%%%
 
-document.addEventListener("mousedown",e=>{
+function setupMouseDetection(){
 
-  if(syntheticMouseEvent) return;
+  document.addEventListener("mousedown",e=>{
 
-  mouseButtons[e.button] = true;
-  realMouseActivity();
+    if(syntheticMouseEvent) return;
 
-},true);
+    mouseButtons[e.button] = true;
 
-document.addEventListener("mouseup",e=>{
+    realMouseActivity();
 
-  if(syntheticMouseEvent) return;
+  },true);
 
-  mouseButtons[e.button] = false;
-  realMouseActivity();
+  document.addEventListener("mouseup",e=>{
 
-},true);
+    if(syntheticMouseEvent) return;
 
-document.addEventListener("mousemove",e=>{
+    mouseButtons[e.button] = false;
 
-  if(syntheticMouseEvent) return;
+    realMouseActivity();
 
-  realMouseActivity();
+  },true);
 
-},true);
+  document.addEventListener("mousemove",e=>{
 
-document.addEventListener("wheel",e=>{
+    if(syntheticMouseEvent) return;
 
-  if(syntheticMouseEvent) return;
+    realMouseActivity();
 
-  realMouseActivity();
+  },true);
 
-},true);
+  document.addEventListener("wheel",e=>{
 
-window.addEventListener("blur",()=>{
+    if(syntheticMouseEvent) return;
 
-  mouseButtons[0] = false;
-  mouseButtons[1] = false;
-  mouseButtons[2] = false;
+    realMouseActivity();
 
-});
+  },true);
+
+  window.addEventListener("blur",()=>{
+
+    mouseButtons[0] = false;
+    mouseButtons[1] = false;
+    mouseButtons[2] = false;
+
+  });
+
+}
 
 //%%%%%%%%%%%% KEYS %%%%%%%%%%%%%
 
@@ -174,26 +204,30 @@ function setKey(code, pressed){
 
   if(!k) return;
 
-  document.dispatchEvent(new KeyboardEvent(
+  document.dispatchEvent(
 
-    pressed ? "keydown":"keyup",
+    new KeyboardEvent(
 
-    {
-      key:k.key,
-      code:code,
-      keyCode:k.keyCode,
-      which:k.keyCode,
-      bubbles:true
-    }
+      pressed ? "keydown" : "keyup",
 
-  ));
+      {
+        key:k.key,
+        code:code,
+        keyCode:k.keyCode,
+        which:k.keyCode,
+        bubbles:true
+      }
+
+    )
+
+  );
+
 }
 
 //%%%%%%%%%%%% MOUSE %%%%%%%%%%%%
 
 function mouseDown(button){
 
-  // Real mouse has priority
   if(realMouseButtonDown(button)) return;
 
   const c = getCanvas();
@@ -202,14 +236,23 @@ function mouseDown(button){
 
   syntheticMouseEvent = true;
 
-  c.dispatchEvent(new MouseEvent("mousedown",{
+  c.dispatchEvent(
 
-    button,
-    bubbles:true
+    new MouseEvent(
 
-  }));
+      "mousedown",
+
+      {
+        button:button,
+        bubbles:true
+      }
+
+    )
+
+  );
 
   syntheticMouseEvent = false;
+
 }
 
 function mouseUp(button){
@@ -220,19 +263,27 @@ function mouseUp(button){
 
   syntheticMouseEvent = true;
 
-  c.dispatchEvent(new MouseEvent("mouseup",{
+  c.dispatchEvent(
 
-    button,
-    bubbles:true
+    new MouseEvent(
 
-  }));
+      "mouseup",
+
+      {
+        button:button,
+        bubbles:true
+      }
+
+    )
+
+  );
 
   syntheticMouseEvent = false;
+
 }
 
 function mouseMove(x,y){
 
-  // Real mouse movement has priority
   if(mouseIsActive()) return;
 
   const c = getCanvas();
@@ -241,20 +292,28 @@ function mouseMove(x,y){
 
   syntheticMouseEvent = true;
 
-  c.dispatchEvent(new MouseEvent("mousemove",{
+  c.dispatchEvent(
 
-    movementX:x,
-    movementY:y,
-    bubbles:true
+    new MouseEvent(
 
-  }));
+      "mousemove",
+
+      {
+        movementX:x,
+        movementY:y,
+        bubbles:true
+      }
+
+    )
+
+  );
 
   syntheticMouseEvent = false;
+
 }
 
 function scroll(v){
 
-  // Real mouse wheel has priority
   if(mouseIsActive()) return;
 
   const c = getCanvas();
@@ -263,14 +322,23 @@ function scroll(v){
 
   syntheticMouseEvent = true;
 
-  c.dispatchEvent(new WheelEvent("wheel",{
+  c.dispatchEvent(
 
-    deltaY:v,
-    bubbles:true
+    new WheelEvent(
 
-  }));
+      "wheel",
+
+      {
+        deltaY:v,
+        bubbles:true
+      }
+
+    )
+
+  );
 
   syntheticMouseEvent = false;
+
 }
 
 //%%%%%%%%%% ACTIONS %%%%%%%%%%
@@ -279,7 +347,10 @@ function tapKey(code){
 
   setKey(code,true);
 
-  setTimeout(()=>setKey(code,false),30);
+  setTimeout(
+    ()=>setKey(code,false),
+    30
+  );
 
 }
 
@@ -310,11 +381,16 @@ function runAction(a, down){
       if(down && !held.inv){
 
         tapKey("KeyE");
-        held.inv=true;
+
+        held.inv = true;
 
       }
 
-      if(!down) held.inv=false;
+      if(!down){
+
+        held.inv = false;
+
+      }
 
       break;
 
@@ -323,11 +399,16 @@ function runAction(a, down){
       if(down && !held.esc){
 
         tapKey("Escape");
-        held.esc=true;
+
+        held.esc = true;
 
       }
 
-      if(!down) held.esc=false;
+      if(!down){
+
+        held.esc = false;
+
+      }
 
       break;
 
@@ -336,11 +417,16 @@ function runAction(a, down){
       if(down && !held.chat){
 
         tapKey("KeyT");
-        held.chat=true;
+
+        held.chat = true;
 
       }
 
-      if(!down) held.chat=false;
+      if(!down){
+
+        held.chat = false;
+
+      }
 
       break;
 
@@ -349,11 +435,16 @@ function runAction(a, down){
       if(down && !held.f3){
 
         tapKey("F3");
-        held.f3=true;
+
+        held.f3 = true;
 
       }
 
-      if(!down) held.f3=false;
+      if(!down){
+
+        held.f3 = false;
+
+      }
 
       break;
 
@@ -362,32 +453,39 @@ function runAction(a, down){
       if(down && !held.f5){
 
         tapKey("F5");
-        held.f5=true;
+
+        held.f5 = true;
 
       }
 
-      if(!down) held.f5=false;
+      if(!down){
+
+        held.f5 = false;
+
+      }
 
       break;
 
     case "Attack":
 
-      // Mouse button 0 has priority
       if(realMouseButtonDown(0)){
 
         if(held.attack){
 
           mouseUp(0);
+
           held.attack = false;
 
         }
 
         break;
+
       }
 
       if(down && !held.attack){
 
         mouseDown(0);
+
         held.attack = true;
 
       }
@@ -395,6 +493,7 @@ function runAction(a, down){
       if(!down && held.attack){
 
         mouseUp(0);
+
         held.attack = false;
 
       }
@@ -403,22 +502,24 @@ function runAction(a, down){
 
     case "Use":
 
-      // Mouse button 2 has priority
       if(realMouseButtonDown(2)){
 
         if(held.use){
 
           mouseUp(2);
+
           held.use = false;
 
         }
 
         break;
+
       }
 
       if(down && !held.use){
 
         mouseDown(2);
+
         held.use = true;
 
       }
@@ -426,6 +527,7 @@ function runAction(a, down){
       if(!down && held.use){
 
         mouseUp(2);
+
         held.use = false;
 
       }
@@ -434,22 +536,24 @@ function runAction(a, down){
 
     case "PickBlock":
 
-      // Mouse button 1 has priority
       if(realMouseButtonDown(1)){
 
         if(held.pick){
 
           mouseUp(1);
+
           held.pick = false;
 
         }
 
         break;
+
       }
 
       if(down && !held.pick){
 
         mouseDown(1);
+
         held.pick = true;
 
       }
@@ -457,6 +561,7 @@ function runAction(a, down){
       if(!down && held.pick){
 
         mouseUp(1);
+
         held.pick = false;
 
       }
@@ -470,13 +575,18 @@ function runAction(a, down){
         if(!mouseIsActive()){
 
           scroll(-120);
+
           held.scrollUp = true;
 
         }
 
       }
 
-      if(!down) held.scrollUp = false;
+      if(!down){
+
+        held.scrollUp = false;
+
+      }
 
       break;
 
@@ -487,16 +597,23 @@ function runAction(a, down){
         if(!mouseIsActive()){
 
           scroll(120);
+
           held.scrollDown = true;
 
         }
 
       }
 
-      if(!down) held.scrollDown = false;
+      if(!down){
+
+        held.scrollDown = false;
+
+      }
 
       break;
+
   }
+
 }
 
 //%%%%%%%%%%%%%% UI %%%%%%%%%%%%%%
@@ -504,6 +621,14 @@ function runAction(a, down){
 function createUI(){
 
   if(document.getElementById("gp_btn")) return;
+
+  if(!document.body){
+
+    setTimeout(createUI,100);
+
+    return;
+
+  }
 
   const btn = document.createElement("button");
 
@@ -515,13 +640,15 @@ function createUI(){
     position:"fixed",
     bottom:"20px",
     right:"20px",
-    zIndex:9999999,
+    zIndex:"2147483647",
     padding:"10px",
     background:"#030126",
     color:"#ebecfa",
     fontFamily:"monospace",
     border:"2px solid #4d4b70",
-    cursor:"pointer"
+    cursor:"pointer",
+    display:"block",
+    pointerEvents:"auto"
 
   });
 
@@ -542,17 +669,20 @@ function createUI(){
     color:"#e1e3f7",
     padding:"12px",
     display:"none",
-    zIndex:9999999,
+    zIndex:"2147483647",
     fontFamily:"monospace",
     border:"1px solid #555",
-    boxShadow:"0 0 20px rgba(0,0,0,0.7)"
+    boxShadow:"0 0 20px rgba(0,0,0,0.7)",
+    pointerEvents:"auto"
 
   });
 
   btn.onclick = ()=>{
 
     panel.style.display =
-      panel.style.display==="block"?"none":"block";
+      panel.style.display === "block"
+      ? "none"
+      : "block";
 
   };
 
@@ -560,11 +690,13 @@ function createUI(){
   document.body.appendChild(panel);
 
   renderUI();
+
 }
 
 function renderUI(){
 
-  const panel = document.getElementById("gp_panel");
+  const panel =
+    document.getElementById("gp_panel");
 
   if(!panel) return;
 
@@ -573,11 +705,13 @@ function renderUI(){
 
   Object.keys(mapping).forEach(k=>{
 
-    const row = document.createElement("div");
+    const row =
+      document.createElement("div");
 
     row.style.marginBottom = "6px";
 
-    const label = document.createElement("span");
+    const label =
+      document.createElement("span");
 
     label.innerText = k;
 
@@ -589,9 +723,11 @@ function renderUI(){
 
     });
 
-    const b = document.createElement("button");
+    const b =
+      document.createElement("button");
 
-    b.innerText = mapping[k] ?? "SET";
+    b.innerText =
+      mapping[k] ?? "SET";
 
     Object.assign(b.style,{
 
@@ -599,7 +735,8 @@ function renderUI(){
       background:"#222",
       color:"#fff",
       border:"1px solid #555",
-      cursor:"pointer"
+      cursor:"pointer",
+      pointerEvents:"auto"
 
     });
 
@@ -617,6 +754,7 @@ function renderUI(){
     panel.appendChild(row);
 
   });
+
 }
 
 //%%%%%%%%%%%% REMAP %%%%%%%%%%%%
@@ -640,6 +778,7 @@ function handleRemap(gp){
     }
 
   });
+
 }
 
 function movement(gp){
@@ -649,16 +788,30 @@ function movement(gp){
 
   const dz = 0.25;
 
-  setKey("KeyW", ly < -dz);
-  setKey("KeyS", ly > dz);
+  setKey(
+    "KeyW",
+    ly < -dz
+  );
 
-  setKey("KeyA", lx < -dz);
-  setKey("KeyD", lx > dz);
+  setKey(
+    "KeyS",
+    ly > dz
+  );
+
+  setKey(
+    "KeyA",
+    lx < -dz
+  );
+
+  setKey(
+    "KeyD",
+    lx > dz
+  );
+
 }
 
 function camera(gp){
 
-  // Physical mouse movement gets priority
   if(mouseIsActive()) return;
 
   let rx = gp.axes[2];
@@ -669,10 +822,21 @@ function camera(gp){
   if(Math.abs(rx) < dz) rx = 0;
   if(Math.abs(ry) < dz) ry = 0;
 
-  rx = Math.sign(rx)*rx*rx;
-  ry = Math.sign(ry)*ry*ry;
+  rx =
+    Math.sign(rx) *
+    rx *
+    rx;
 
-  mouseMove(rx * 12, ry * 12);
+  ry =
+    Math.sign(ry) *
+    ry *
+    ry;
+
+  mouseMove(
+    rx * 12,
+    ry * 12
+  );
+
 }
 
 //%%%%%%%%%%% LOOP %%%%%%%%%%%
@@ -685,10 +849,8 @@ function loop(){
 
     handleRemap(gp);
 
-    // Movement is OR with keyboard
     movement(gp);
 
-    // Camera is OR with mouse, with mouse priority
     camera(gp);
 
     for(const a in mapping){
@@ -701,17 +863,44 @@ function loop(){
 
       if(!btn) continue;
 
-      runAction(a, btn.pressed);
+      runAction(
+        a,
+        btn.pressed
+      );
 
     }
+
   }
 
   requestAnimationFrame(loop);
+
 }
 
 //%%%%%%%%%%% START %%%%%%%%%%%
 
-loadMapping();
-createUI();
+function startGamepad(){
 
-requestAnimationFrame(loop);
+  loadMapping();
+
+  setupMouseDetection();
+
+  createUI();
+
+  requestAnimationFrame(loop);
+
+}
+
+//%%%%%%%%%%% WAIT FOR PAGE %%%%%%%%%%%
+
+if(document.readyState === "loading"){
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    startGamepad
+  );
+
+}else{
+
+  startGamepad();
+
+}
